@@ -1,6 +1,7 @@
-# Java-Messaging-Service ❤️
+# Java-Messaging-Service (JMS) ❤️
 
-- This module is about Java Messaging Service (JMS) API where you will be having a clear Idea about What is JMS, where and How to use it & example programs with explanations about some JMS service providers like ActiveMQ, RabbitMQ, etc... with proper reference e-books and tutorial links.
+- This module is about Java Messaging Service (JMS) API where you will be having a clear Idea about What is JMS, where and How to use it. 
+- It has some example programs with explanations about some JMS service providers like ActiveMQ, RabbitMQ, etc... with proper reference e-books and tutorial links.
 
 ### For more such developments, visit my [Portfolio](https://gowthamrajk.github.io)
 
