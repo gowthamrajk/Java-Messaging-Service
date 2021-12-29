@@ -3,10 +3,14 @@
 - This module is about Java Messaging Service (JMS) API where you will be having a clear Idea about What is JMS, where and How to use it. 
 - It has some example programs with explanations about some JMS service providers like ActiveMQ, RabbitMQ, etc... with proper reference e-books and tutorial links.
 
-### For more such developments, visit my [Portfolio](https://gowthamrajk.github.io)
+### For more such developments, visit my [Portfolio](https://gowthamrajk.github.io) 🌐
 
-## Tutorial References : 
+## Learning Resources 📺
 
+- [Spring JMS Tutorials - Best reference](https://www.youtube.com/playlist?list=PLmCsXDGbJHdibOx6axScPiuHA8ftsrmut)
+- [Spring + JMS Integration Tutorials](https://www.youtube.com/watch?v=9WGSVnhlOHE&t=17s)
+- [JMS from basics](https://www.youtube.com/playlist?list=PLA80A2255382AFC98)
+- [JMS Tutorials](https://www.youtube.com/watch?v=UYbFdlEr3YM)
 
 
 <br>
