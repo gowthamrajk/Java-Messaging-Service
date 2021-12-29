@@ -1,0 +1,115 @@
+
+Spring JMS Producer :=> 
+
+Sender part for sending Objects to a Queue of RabbitMQ using annotation configuration :
+
+
+RabbitMQConfig.java =>
+
+@Configuration
+@EnableAutoConfiguration
+public class RabbitMQConfig
+{
+    final static String queueName = "message_queue";
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+
+    @Bean
+    public ConnectionFactory connectionFactory()
+    {
+	CachingConnectionFactory connectionFactory = new CachingConnectionFactory("localhost");
+	connectionFactory.setPort(5672);
+	connectionFactory.setUsername("guest");
+	connectionFactory.setPassword("guest");
+	return connectionFactory;
+    }
+
+    @Bean
+    Queue queue()
+    {
+	return new Queue(queueName, false);
+    }
+
+    @Bean
+    TopicExchange exchange()
+    {
+	return new TopicExchange("message_queue_exchange");
+    }
+
+    @Bean
+    Binding binding(Queue queue, TopicExchange exchange)
+    {
+	return BindingBuilder.bind(queue).to(exchange).with(queueName);
+    }
+}
+
+
+
+Product.java =>
+
+public class Product implements Serializable
+{
+    private int productId;
+    private String name;
+    private int quantity;
+
+    public int getProductId()
+    {
+	return productId;
+    }
+    public void setProductId(int productId)
+    {
+ 	this.productId = productId;
+    }
+
+    public String getName()
+    {
+	return name;
+    }
+    public void setName(String name)
+    {
+	this.name = name;
+    }
+
+    public int getQuantity()
+    {
+	return quantity;
+    }
+    public void setQuantity(int quantity)
+    {
+	this.quantity = quantity;
+    }
+
+    @Override
+    public String toString()
+    {
+	return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + "]";
+    }
+}
+
+
+
+MessageProducerApp.java =>
+
+public class MessageProducerApp
+{
+    final static String queueName = "message_queue";
+
+    public static void main(String[] args) throws InterruptedException
+    {
+	AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(RabbitMQConfig.class);
+	RabbitTemplate rabbitTemplate = (RabbitTemplate) ctx.getBean("rabbitTemplate");
+
+	Product product = new Product();
+	product.setProductId(100);
+	product.setName("Laptop");
+	product.setQuantity(10);
+		
+	rabbitTemplate.convertAndSend(queueName, product);
+	System.out.println("product object has been sent successfully to Queue");
+	ctx.close();
+    }
+}
+
+#############################################################################################################################

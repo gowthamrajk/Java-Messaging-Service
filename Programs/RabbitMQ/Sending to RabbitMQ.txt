@@ -1,0 +1,92 @@
+
+Sending Class Object to the queue of RabbitMQ using Java Program : 
+
+
+Product.java =>
+
+public class Product implements Serializable
+{
+    private int productId;
+    private String name;
+    private int quantity;
+
+    public int getProductId()
+    {
+	return productId;
+    }
+    public void setProductId(int productId)
+    {
+ 	this.productId = productId;
+    }
+
+    public String getName()
+    {
+	return name;
+    }
+    public void setName(String name)
+    {
+	this.name = name;
+    }
+
+    public int getQuantity()
+    {
+	return quantity;
+    }
+    public void setQuantity(int quantity)
+    {
+	this.quantity = quantity;
+    }
+
+    @Override
+    public String toString()
+    {
+	return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + "]";
+    }
+}
+
+
+
+MessageSender.java =>
+
+public class MessageSender
+{
+    private final static String QUEUE_NAME = "Message_Queue";
+
+    public static void main(String[] argv) throws Exception
+    {
+	ConnectionFactory factory = new ConnectionFactory();
+	
+	factory.setHost("localhost");
+	try (
+	    Connection connection = factory.newConnection();
+	    Channel channel = connection.createChannel())
+
+	{
+	    channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+			
+	    Product product = new Product();
+	    product.setProductId(100);
+	    product.setName("Laptop");
+	    product.setQuantity(10);
+
+ 	    byte[] byteArray = getByteArray(product);
+
+	    channel.basicPublish("", QUEUE_NAME, null, byteArray);
+            System.out.println(" [x] Sent '" + product + "'");
+ 	}
+	catch (Exception exe)
+	{
+	    exe.printStackTrace();
+	}
+    }
+
+    public static byte[] getByteArray(Product product) throws IOException
+    {
+	ByteArrayOutputStream out = new ByteArrayOutputStream();
+	ObjectOutputStream os = new ObjectOutputStream(out);
+	os.writeObject(product);
+	return out.toByteArray();
+    }
+}
+
+#############################################################################################################################

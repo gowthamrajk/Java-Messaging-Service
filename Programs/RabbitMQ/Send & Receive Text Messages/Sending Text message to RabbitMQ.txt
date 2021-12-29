@@ -1,0 +1,32 @@
+
+Sending Text Message to a queue of RabbitMQ using Java Program :
+
+
+MessageSender.java =>
+
+public class MessageSender
+{
+    private final static String QUEUE_NAME = "Message_Queue";
+
+    public static void main(String[] argv) throws Exception
+    {
+	ConnectionFactory factory = new ConnectionFactory();
+
+	factory.setHost("localhost");
+	try (Connection connection = factory.newConnection();
+	    Channel channel = connection.createChannel())
+
+	{
+	    channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+	    String message = "Hello World!";
+	    channel.basicPublish("", QUEUE_NAME, null, message.getBytes("UTF-8"));
+	    System.out.println(" [x] Sent '" + message + "'");
+	}
+	catch (Exception exe)
+        {
+	    exe.printStackTrace();
+	}
+    }
+}
+
+#############################################################################################################################

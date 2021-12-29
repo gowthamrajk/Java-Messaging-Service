@@ -1,0 +1,146 @@
+
+Spring JMS Receiver :=> 
+
+Receiver part for Receive Class Object from a Queue of RabbitMQ with Manual Acknowledgement :
+
+
+RabbitMQConfig.java =>
+
+@Component
+public class RabbitMQConfiguration
+{
+
+    public static final String topicExchangeName = "message_queue_exchange";
+
+    public static final String queueName = "message_queue";
+
+    @Bean
+    Queue queue()
+    {
+	return new Queue(queueName, false);
+    }
+
+    @Bean
+    TopicExchange exchange()
+    {
+	return new TopicExchange(topicExchangeName);
+    }
+
+    @Bean
+    Binding binding(Queue queue, TopicExchange exchange)
+    {
+	return BindingBuilder.bind(queue).to(exchange).with("message_routing_key");
+    }
+
+    @Bean
+    public ConnectionFactory connectionFactory()
+    {
+	CachingConnectionFactory connectionFactory = new CachingConnectionFactory("localhost");
+	connectionFactory.setPort(5672);
+	connectionFactory.setUsername("guest");
+	connectionFactory.setPassword("guest");
+	return connectionFactory;
+    }
+
+    @Bean
+    SimpleMessageListenerContainer container(ConnectionFactory connectionFactory, MessageListenerAdapter listenerAdapter)
+    {
+	SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+	container.setConnectionFactory(connectionFactory);
+	container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
+	container.setQueueNames(queueName);
+	container.setMessageListener(listenerAdapter);
+	return container;
+    }
+
+    @Bean
+    MessageListenerAdapter listenerAdapter(JMSReceiver jmsReceiver)
+    {
+	return new MessageListenerAdapter(jmsReceiver, "receiveMessage");
+    }
+}
+
+
+Product.java =>
+
+public class Product implements Serializable
+{
+    private int productId;
+    private String name;
+    private int quantity;
+
+    public int getProductId()
+    {
+	return productId;
+    }
+    public void setProductId(int productId)
+    {
+ 	this.productId = productId;
+    }
+
+    public String getName()
+    {
+	return name;
+    }
+    public void setName(String name)
+    {
+	this.name = name;
+    }
+
+    public int getQuantity()
+    {
+	return quantity;
+    }
+    public void setQuantity(int quantity)
+    {
+	this.quantity = quantity;
+    }
+
+    @Override
+    public String toString()
+    {
+	return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + "]";
+    }
+}
+
+
+
+JMSReceiver.java =>
+
+@Component
+public class JMSReceiver implements ChannelAwareMessageListener
+{
+    @Override
+    public void onMessage(Message message, com.rabbitmq.client.Channel channel) throws Exception
+    {
+	System.out.println("Received <" + message + ">");
+
+	byte[] byteArray = message.getBody();
+	Product product = (Product) getObject(byteArray);
+	System.out.println("product = " + product);
+		
+	channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+    }
+
+    private static Object getObject(byte[] byteArr) throws IOException, ClassNotFoundException
+    {
+	ByteArrayInputStream bis = new ByteArrayInputStream(byteArr);
+	ObjectInput in = new ObjectInputStream(bis);
+	return in.readObject();
+    }
+}
+
+
+Application.java =>
+
+@SpringBootApplication
+public class Application
+{
+    public static void main(String[] args) throws InterruptedException
+    {
+	SpringApplication.run(Application.class, args);
+    }
+}
+
+
+#############################################################################################################################

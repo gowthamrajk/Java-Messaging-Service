@@ -1,0 +1,143 @@
+
+Spring JMS Producer :=>
+
+Sender part for Receiving a message from Queue of ActiveMQ Asynchronously using @JmsListener & @EnableJms annotations : 
+
+
+AppConfig.java =>
+
+@Configuration
+@ComponentScan(basePackages = "....")
+@Import({ MessagingConfiguration.class })
+public class AppConfig
+{
+    // Put Other Application configuration here.
+}
+
+
+MessagingConfiguration.java =>
+
+@Configuration
+public class MessagingConfiguration
+{
+    private static final String DEFAULT_BROKER_URL = "tcp://localhost:61616";
+    private static final String MESSAGE_QUEUE = "message_queue";
+
+    @Autowired
+    MessageReceiver messageReceiver;
+
+    @Bean
+    public ConnectionFactory connectionFactory()
+    {
+	ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory();
+	connectionFactory.setBrokerURL(DEFAULT_BROKER_URL);
+	connectionFactory.setTrustedPackages(Arrays.asList("com.ram"));
+	return connectionFactory;
+    }
+
+    @Bean
+    public JmsTemplate jmsTemplate()
+    {
+	JmsTemplate template = new JmsTemplate();
+	template.setConnectionFactory(connectionFactory());
+	template.setDefaultDestinationName(MESSAGE_QUEUE);
+	return template;
+    }
+
+    @Bean
+    MessageConverter converter()
+    {
+	return new SimpleMessageConverter();
+    }
+}
+
+
+Product.java =>
+
+public class Product implements Serializable
+{
+    private int productId;
+    private String name;
+    private int quantity;
+
+    public int getProductId()
+    {
+	return productId;
+    }
+    public void setProductId(int productId)
+    {
+ 	this.productId = productId;
+    }
+
+    public String getName()
+    {
+	return name;
+    }
+    public void setName(String name)
+    {
+	this.name = name;
+    }
+
+    public int getQuantity()
+    {
+	return quantity;
+    }
+    public void setQuantity(int quantity)
+    {
+	this.quantity = quantity;
+    }
+
+    @Override
+    public String toString()
+    {
+	return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + "]";
+    }
+}
+
+
+MessageSender.java =>
+
+@Component
+public class MessageSender
+{
+    @Autowired
+    JmsTemplate jmsTemplate;
+
+    public void sendMessage(final Product product)
+    {
+
+	jmsTemplate.send(new MessageCreator()
+	{
+	    public Message createMessage(Session session) throws JMSException
+	    {
+		ObjectMessage objectMessage = session.createObjectMessage(product);
+		return objectMessage;
+	    }
+	});
+    }
+}
+
+
+MessageProducerApp.java =>
+
+public class MessageProducerApp
+{
+    public static void main(String[] args)
+    {
+	AbstractApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+
+	MessageSender messageSender = context.getBean(MessageSender.class);
+
+	Product product = new Product();
+	product.setProductId(100);
+	product.setName("Laptop");
+	product.setQuantity(10);
+
+	messageSender.sendMessage(product);
+	System.out.println("Message has been sent successfully...");
+
+	((AbstractApplicationContext) context).close();
+    }
+}
+
+#############################################################################################################################

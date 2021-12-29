@@ -1,0 +1,483 @@
+
+JMS (Java Messaging Service)
+
+- JMS is all about applications can communicate with each other using standard based messaging.
+- The applications can send and receive messages between them.
+
+- using jms, we can send or receive messages to two or more clients.
+- messaging server is responsible for handling, routing and delivering the messages to the receiver/client.
+- eg: in JBoss server, it provides JBoss MQ as the JMS service provider. 
+(some other service providers are ActiveMQ, RabbitMQ, JBossMQ, HornetQ, IBM websphere MQ)
+
+- Receiver/Subscriber is a JMS client which listens to the queue or topic which is present in the messaging server and 
+  consumes it if present. 
+- Producer/Publisher is a JMS client which can create and send the messages to the JMS server queue. 
+- Producer and Receiver can act as both sender and receiver of messages as well (its possible) 
+
+- We can send different kind of messages between producer and receiver like text message, map message, byte message, 
+  stream message, object message.
+
+*****************************************************************************************************************************
+
+Point to Point messaging : 
+
+- for each message, there will be only one producer or consumer. 
+- Here, the producer will create a message and send to the messaging server queue. 
+- The receiver will consume the message and sends an acknowledgement back to the messaging server. 
+- Queues are based on a point to point messaging model where messages are sent to a queue. Each message has exactly 
+  one sender and one receiver. 
+- Messages are gauranteed to be delivered to only one receiver. 
+
+*****************************************************************************************************************************
+
+Publish/Subscribe messaging : 
+
+- each message has multiple consumers. 
+- Producer/Publisher send the topic to the server. Each subscriber will subscribe to the topic and once the topic is 
+  arrived to the server, message will be copied and it will be sent to all the subscriber/receivers.
+- Topic is based on publish/subscribe model where messages are sent to a topic. N subscribers can subscribe the topic 
+  and once the message is arrived, each will get a copy of it. 
+
+- as JDBC API supports various database like mysql, oracle sql, postgre sql... 
+- JMS API also supports various service providers like Active MQ, JBoss MQ, IBM websphere MQ.
+
+*****************************************************************************************************************************
+
+QUEUES & TOPICS : 
+
+- each JMS messages are addressed with a destination. 
+- Destination are like postal mail boxes where messages are placed until someone comes and picks up the messages.
+- It has two types named 1) Queues 2) Topics
+
+- Queues are generally based on point-to-point messaging model where messages re sent to a queue. Each message can have 
+  one sender and one receiver only. 
+- Topics are based on Publish/Subscribe model where messages are sent to the topic and each subscriber will get a 
+  copy of it when the messages are send from publisher. 
+
+#############################################################################################################################
+
+ACTIVE MQ :
+
+- ActiveMQ is an open source protocol developed by Apache which functions as an implementation of message-oriented middleware
+  (MOM). 
+- Its basic function is to send messages between different applications, but includes additional features like STOMP, JMS, 
+  and OpenWire, etc...
+
+Advantages : 
+
+1) Highly Scalable, Open Source, Easy to use & Broker Clustering
+2) Supports multiple protocols like HTTP/HTTPS, STOMP, UDP for connectivity
+3) Offers client APIs for multiple languages like Java, .Net, Python, Ruby, and many more languages.
+4) Allows you to customize the authorization and authentication required for your communication as per your requirement.
+5) Provides reliable communication between the producer and consumers.
+
+#############################################################################################################################
+
+JMS API PROGRAMMING MODEL : 
+
+- Basic building blocks of JMS are 
+1) Administration Objects : Connection factories & destinations
+2) Connections
+3) Session
+4) Message Producer
+5) Message Consumer
+6) Messages
+
+JMS Administration Objects : 
+
+- Two main parts of JMS -> connection factory & destination are maintained administratively and not programatically.
+- The technologies underlying these objects are very different from one implementation of JMS API to other.
+- JMS client can access these object through implementing interfaces.
+- An administrator configures the administration objects with the JNDI namespace and JMS clients then access them by 
+  using resource injection.
+
+Connections : 
+
+=> Using connection We can create sessions, using session we can create messages, using session we can create message producer,
+   using message producer we can send messages to the destination, using session we can create message consumer, message 
+   cosumer is used to consume messages from the destination.
+
+JMS Connection Factories : 
+
+- A connection factory is the object a client used to create connections to a provider.
+- A connection factory encapsulates a set of connection configuration parameters that has been defined by an admin.
+- Each connection factory is an instance of the ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory interface.
+
+JMS Destinations : 
+
+- A destination object a client used to specify the target of messages it produces and the source of messages it consumes.
+- Two types :=> Queues & Topics.
+
+JMS Connections : 
+
+- A connection encapsulates a virtual connection with a JMS provider.
+- A connection could represent an open TCP/IP socket between a client & provider service demon.
+- we can use connection to create one or more sessions.
+
+JMS Sessions : 
+
+- A session is a single threaded context for producing and consuming messages.
+- we can use session to create message producers, message consumers, messages, queue browsers, temporary queues and topics.
+
+JMS Message Producers : 
+
+- A message producer is an object that is created by a session and used for sending messaged to a destination.
+- It implements the MessageProducer Interface.
+
+JMS Message Consumer : 
+
+- A message consumer is an object that is created by a session and used for receiving messaged sent to a destination.
+- It implements the MessageConsumer Interface.
+
+JMS Message Listeners : 
+
+- A message Listener is an object that acts as an asynchronous event handler for messages.
+- It implements the MessageListener interface which contains one method called OnMessage(). In that method, you can define 
+  actions to be taken when a message arrives.
+- we can register the message listener with a specific MessageConsumer by using the setMessageListener().
+
+JMS Message Selectors : 
+
+- If our messaging application needs to filter the message it receives, we can use a JMS API message selector which allows a
+  message consumer to specify the messages it is interested in
+- Message selectors assign the work of filtering messages to the JMS provider rather than to the application.
+
+JMS Messages : 
+
+- The ultimate purpose of a JMS application is to produce and consume messages that can then be used by other applications.
+- JMS messages have a basic format that is simple but highly flexible, allowing you to create messages that match formats 
+  used by non-JMS applications on heterogenous platforms.
+
+JMS Queue Browsers : 
+
+- we can create a QueueBrowser object to inspect the messages in a queue.
+- Messages sent to a queue remain in the queue until the message consumer for that queue consumes them.
+- hence JMS API provides an object that allows you to browse the messages in the queue and display the header values for 
+  each messages.
+
+JMS Exception Handling :
+
+- The root class for exceptions thrown by JMS API methods is JMSException.
+- Catching these JMSException provides a generic wat of handling all exceptions related to the JMS API.
+
+
+Delivery Modes : (for messages) 
+
+- Delivery modes means which can be specifies on the MessageProducer level as well as on the individual message level.
+=> Two types :=> Persistent/Non-Persistent Messages.
+
+- Default Delivery mode is PERSISTENT, which means messages will be stored on disk/database until it is consumed by a
+  consumer, and will survive a broker restart.
+
+- when using non-persistent delivery, if you kill a broker, then all the in-transient messages will be lost.
+
+Delivery Modes : (for Topics)
+
+=> Two subscriptions are there :=> Durable/Non-durable
+
+- with durable subscription, if the subcriber[which has subscribed for message on a topic] is down for some time, once it   
+  comes up, it will receive all the messages sent for it[including the ones sent when it was down]
+- with Non-durable subscription, a subscriber will receive only the messages when it was connected to topic[will loose all
+  the ones sent when it was down]. Not that this is not applicable for queue's as they can be considered always durable 
+  [only one consumer, and it will always receive the messages destines for it in queue].
+
+#############################################################################################################################
+
+JMS Template : 
+
+- It provides an abstraction which hides all the complexities of JMS communication.
+- without JMS template, we are forced to create connections/sessions/message producer/message consumer,etc.. and catch all 
+  the nasty exceptions which the platform produces.
+- Using JMS template, we have to just simply work with an API. spring behind the scenes will take care of all the work of
+  creating connection, obtaining sessions, sending/ synchronous receiving messages, etc..
+- We will be using JMS template for sending the messages.
+- JMS template also provides facility for receiving messages, but that is synchronous and usually not preferred when 
+  asynchronous communication is possible.
+
+#############################################################################################################################
+
+Using @EnableJms and @JmsListener : 
+
+=> Configure a message-listener-container [with JmsListenerContainerFactory] : - which listens on a destination [can be one 
+   used with @JmsListener] and when any messages arrives on this destination, it retreived that message and passes to the 
+   bean annotated with @JmsListener for that destinaton.
+=> use @EnableJms which enables detection of JmsListener annotations on any spring-managed bean in the container.
+
+=> DefaultJmsListenerContainerFactory is a JmsListenerContainerFactory implementation to build a regular 
+   DefaultMessageListenerContainer. It needs a connection factory. we can specify the concurrency using setConcurrency()
+   as "lower-Upper". when its upper, the lower limit is 1.
+
+
+#############################################################################################################################
+
+RABBIT MQ : 
+
+- It is a Message Broker which accepts the messages, stores the messages and forwards the messages.
+- Eg : PostOffice => when we put the mail that we want posting in a post box, we can be sure that the postman will 
+       deliver the mail to our recepient. here, RabbitMQ is a postbox, post office and a post man.
+- The messages are stored as Binary Blobs of data (Byte Arrays)
+
+- Producer will create and send messages to RabbitMQ. It will store in the Queue. The consumer will consume the message from
+  the queue and it will send an acknowledgement to the queue.
+
+- Queue is similar to a postbox which resides inside RabbitMQ. Although messages flow through RabbitMQ, they can only be 
+  stored inside a queue.
+- A Queue is only bound by the host's memory & disk limits, it's essentially a large message buffer.
+- Many producers can send messages that go to one queue, and many consumers can try to receive data from one queue.
+- Note that the producer, consumer and broker do not have to reside on the same host; indeed in most applications they don't.
+  An application can be both a producer and consumer too.
+
+*****************************************************************************************************************************
+
+Difference Between ActiveMQ & RabbitMQ : 
+
+ActiveMQ =>
+
+- ActiveMQ is used in enterprise projects to store multiple instances and supports clustering environments based on the 
+  JMS messaging specification. 
+- It is an Opensource message broker written in java together with a JMS client.
+- Developed by apache Software
+- Has Apache license 2.0 and written in java.
+
+RabbitMQ =>
+
+- RabbitMQ is a message broker which is executed in low-level AMQP protocol and acts as an intermediator between two 
+  application in the communication process.
+- Open source message broker that was originally implemented the advanced message queuing protocol.
+- Developed by Pivotal software.
+- written in ErLang and has Mozilla public license.
+
+*****************************************************************************************************************************
+
+Sending & Receiving Messages from a Queue of RabbitMQ : 
+
+- Producer/Publisher creates and send message to the Exchange of RabbitMQ.
+- Exchange routes the message to Queue.
+- Queue is the container of messages which holds the messages in ByteArrays.
+- Consumer consumes the message from the queue and send an acknowledgement to the queue.
+- Both queue and exchange resides inside the RabbitMQ.
+
+#############################################################################################################################
+
+RabbitMQ Messaging Model : 
+
+
+                Producer ===>  X   ==(binding)==> Queue ===> Consumer
+
+
+Producer : A user application that sends messages.
+
+Queue : A buffer which stores the messages.
+
+Consumer : A user application that receives messages.
+
+- The core idea in the messaging model in RabbitMQ is that the producer never sends any messages directly to a queue.
+  Actually, quite often the producer doesn't know if a message will be delivered to any queue at all.
+- Instead, the producer can only send messages to an exchange. An exchange is a very simple thing. On one side it receives
+  messages from producers and the other side it pushes them to queues. The exchange must know exactly whet to do with a 
+  message it receives. should it be appended to a particular queue? should it be appended to many queues? or should it get 
+  discarded. The rules for that are defined by the exchange type.
+- There are a few exchange types available like direct, topic, fanout, default and Headers.
+
+*****************************************************************************************************************************
+
+AMQP Model : 
+
+- Advanced Message Queuing Protocol(AMQP) is a messaging protocol that enables conforming client applications to communicate
+  with conforming messaging middleware brokers.
+- Messaging brokers receive messages from publishers(applications that publish them, also known as producers) and route them
+  to consumers(applications that process them).
+- since it is a network protocol, the publishers, consumers & the broker cal all reside on different machines.
+
+Eg: 
+
+             Publisher  ===>    Exchange     ===> Queue ===> Consumer
+
+- Messages are published to exchanges, which are often compared to post offices or mailboxes.
+  Exchanges then distribute message copies to queues using rules called as bindings. Then AMQP brokers either delivers messages
+  to consumers subscribed to queues, or consumers fetch/pull messages from queues on demand.
+- Networks are unreliable and applications may fail to process messages therefore the AMQP model has a notion of message
+  acknowledgments. when a message is delivered to a consumer the consumer notifies the broker, either automatically or 
+  as soon as the application developer chooses to do so. When message acknowledgements are in use, a broker will only completely
+  remove a message from a queue when it receives a notification for that message (or group of messages).
+- In certain situations, for example, when a message cannot be routed, messages may be returned to publishers, dropped or 
+  if the broker implements an extension, placed into a so-called "dead letter queue". Publisher choose how to handle situations
+  like this by publishing messages using certain parameters.
+=> Queue exchange and Bindings are collectively referred as AMQP entities.
+
+#############################################################################################################################
+
+EXCHANGES : 
+
+- Exchanges are AMQP entities where messages are sent. Exchanges take a message and route it into zero or more queues. 
+- The routing algorithm depends on the exchange type and rules called as bindings.
+- Exchanges can be durable or transient. Durable exchanges survive broker restart whereas transient exchanges do not 
+  (they have to be redeclared when broker comes back online). Not all scenarios ans use cases require exchanges to be durable.
+
+Eg: 
+
+             Publisher  ===>    Exchange     ===> Queue ===> Consumer
+                  
+Types : 
+
+1) Direct Exchange -> (empty string and any direct)
+2) Fanout Exchange -> any fanout
+3) Topic Exchange -> any topic
+4) Headers Exchange -> any match (and any headers in RabbitMQ)           
+
+*****************************************************************************************************************************
+
+Header Exchange : (in RabbitMQ)
+
+- The Headers exchange type routes messages based upon a matching of message headers to the expected headers specified by the
+  binding queue.
+- The Headers exchange type is similar to the topic exchange type more than one criteria can be specified as a filter, but the 
+  headers exchange differs in that its criteria is expressed in the message headers as opposed to the routing key, may occur
+  in any order, and may be specified as matching any or all of the specified headers.
+- The Headers exchange type is useful for directing messages which may contain a subset of known criteria where the order is 
+  not established and provides a more convenient way of matching based upon the use of complex types as the matching criteria.
+
+=> The producer will create/produce the message and send to the Headers exchange
+=> Based on the matching headers, it will send to the appropriate Queues.
+=> The consumers of that particular queue then consumes the messages from the queue.
+
+Eg : 
+
+                                                ===>      Queue 1            ===>  Consumer
+                                                     {'x-match':'any',     
+                                                      'key1':'value1',
+                                                      'key2':'value2' }
+
+       Producer  ===>    Headers Exchange       --->      Queue 2            ===>  Consumer
+                       eg: {'key1','value1'}          {'x-match':'any',      
+                                                       'key3':'key4' }
+
+                                                --->      Queue 3            ===>  Consumer
+                                                      {'x-match':'al',      
+                                                       'key1':'value1',
+                                                       'key2':'value2' }
+
+       (===> matching queues, ---> unmatching queues)
+
+=> Here, the header will be matched with the appropriate queue and the message will be sent to the queue.
+=> 'x-match' is a parameter which determines the matching condition of the header. 
+   (any => AND condition, al => OR condition)
+
+*****************************************************************************************************************************
+
+Topic Exchange : (in RabbitMQ)
+
+- The topic exchange type routes messages to queues whose routing key matches all, or a portion of a routing key.
+- With topic exchanges, messages are published with routing keys containing a series of words seperated by a dot
+  (eg: "word1.word2.word3").
+- Queues binding to a topic exchange supply a matching pattern for the server to use when routing the message.
+- Patterns may contain an astriesk("*") to match a word in a specific position of the routing key, or a hash("#") to match 
+  zero or more words. 
+  (eg : The message published with routing key of "honda.civic.navy" would match queues bound with "honda.civic.navy",
+        "*.civic.*","honda.#","honda.civic.#","*.civic.#","*.*.navy" or "#". But it won't match "honda.accord.navy", 
+        "honda.accord.silver","*.accord.*","ford.#")
+
+=> The producer will create/produce the message and send to the Topic Exchange
+=> Based on the matching Pattern, it will send the topic messages to the appropriate Queues.
+=> The topic exchange send the messages to the queues, who's routing key matches fully or partially with the message key.
+=> The consumers of that particular queue then consumes the topic messages from the queue.
+
+Eg : 
+
+                                                          ===>       Queue 1        ===>  Consumer
+                                                                   "*.green.*"
+
+       Producer  ===>         Topic Exchange              --->       Queue 2        ===>  Consumer
+                       routing key: "first.green.fast"            "*.red.fast"
+
+                                                          ===>       Queue 3        ===>  Consumer
+                                                                     "*.fast"
+
+         (===> matching queues, ---> unmatching queues)
+
+=> The topic exchange send the message to queues who's routing keys are fully or partially matched with the message routing
+   key. If not matched, it won't send. If it matched to multiple queues, It sends multiple copy of messages.
+
+*****************************************************************************************************************************
+
+Fanout Exchange : (in RabbitMQ)
+
+- The Fanout Exchange type routes messages to all bound queues indiscriminately. If a routing key is provided, it will 
+  simpley be ignored.
+- The fanout exchange type is useful to facilitating the publish-subscribe pattern
+- If N queues are bound to a fanut exchange, when a new message is published to that exchange a copy of the message is 
+  delivered to all N queues. Fanout exchanges are ideal for the broadcast routing of messages.
+- We can use this in : 
+  i) sport news sites can use fanout exchanges for distributing score updates to mobile clients in near real-time.
+  ii) group chats can distribute messages between participants using fanout exchange.
+
+=> The producer will create/produce the message and send to the Fanout Exchange.
+=> Fanout Exchange sends messages to all the queues and if routing key is given, it ignores the key.
+=> The consumers of that particular queue then consumes the messages from the queue.
+
+Eg : 
+
+                                           ===>       Queue 1        ===>  Consumer
+                                           
+       Producer  ===>   Fanout Exchange    ===>       Queue 2        ===>  Consumer
+
+                                           ===>       Queue 3        ===>  Consumer
+
+       (===> matching queues, ---> unmatching queues)
+
+
+*****************************************************************************************************************************
+
+Direct Exchange : (in RabbitMQ)
+
+- The direct exchange type routes messages with a routing key equal to the routing key declared by the binding queue.
+- A direct exchange delivers messages to queues based on the message routing key.
+- Direct exchange are often used to distribute tasks between multiple workers {instances of the same application} in a 
+  round robin manner.
+- When doing so, it is important to understand that in AMQP 0-9-1, messages are load balanced between consumers and not 
+  between queues.
+
+=> The producer will create/produce the message and send to the Direct Exchange.
+=> Direct Exchange sends messages to the queues that exactly matches with the routing key.
+=> The consumers of that particular queue then consumes the messages from the queue.
+
+Eg : 
+
+                                                          ===>       Queue 1        ===>  Consumer
+                                                                     "green"
+
+       Producer  ===>         Direct Exchange             --->       Queue 2        ===>  Consumer
+                           routing key: "green"                       "red"
+
+                                                          --->       Queue 3        ===>  Consumer
+                                                                     "orange"
+
+         (===> matching queues, ---> unmatching queues)
+
+*****************************************************************************************************************************
+
+Default Exchange : (in RabbitMQ)
+
+- The default exchange is a direct exchange with no name(empty string) predefined declared by the AMQP message broker.
+- It has one special property that makes it very useful for simple applications. every queue that is create automatically 
+  bound to it with a routing key which is the same as the queue name.
+  eg: when we declare a queue with the name of "product-queue", the AMQP 0-9-1 broker will bind it to the default exchange
+      using product-queue as the routing key. hence, a message published to the default exchange with the routing key 
+      "product-queue" will be routed to the queue "product-queue".
+- The default exchange makes it seems like it is possible to deliver messages directly to queues, even though that is not 
+  technically what is happening.
+
+=> The Publisher publishes/produces the message and send to the Exchange.
+=> The Exchange checks for the Routing Key and send the message to the queue which matches with that routing key.
+=> If it's a default Exchange, then whenever the queue is created, the message is automatically binded with the Exchange 
+   with routing key which is same as the queue name.
+=> The consumers of that particular queue then consumes the messages from the queue.
+
+Eg : 
+
+       Publisher  ===>    Exchange     ===> Queue ===> Consumer
+                        (routing key)
+
+
+#############################################################################################################################
+

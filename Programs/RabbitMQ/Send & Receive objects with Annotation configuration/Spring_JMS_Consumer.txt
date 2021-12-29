@@ -1,0 +1,147 @@
+
+Spring JMS Consumer :=> 
+
+Receiver part for Receive Class Object from a Queue of RabbitMQ using annotation configuration :
+
+
+RabbitMQConfig.java =>
+
+@Configuration
+@EnableAutoConfiguration
+public class RabbitMQConfig
+{
+    final static String queueName = "message_queue";
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+
+    @Bean
+    Queue queue()
+    {
+	return new Queue(queueName, false);
+    }
+
+    @Bean
+    TopicExchange exchange()
+    {
+	return new TopicExchange("message_queue_exchange");
+    }
+
+    @Bean
+    Binding binding(Queue queue, TopicExchange exchange)
+    {
+	return BindingBuilder.bind(queue).to(exchange).with(queueName);
+    }
+
+    @Bean
+    public ConnectionFactory connectionFactory()
+    {
+	CachingConnectionFactory connectionFactory = new CachingConnectionFactory("localhost");
+	connectionFactory.setPort(5672);
+	connectionFactory.setUsername("guest");
+	connectionFactory.setPassword("guest");
+	return connectionFactory;
+    }
+
+    @Bean
+    SimpleMessageListenerContainer container(ConnectionFactory connectionFactory, MessageListenerAdapter listenerAdapter)
+    {
+	System.out.println("host = " + connectionFactory.getHost());
+	SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+	container.setConnectionFactory(connectionFactory);
+	container.setQueueNames(queueName);
+	container.setMessageListener(listenerAdapter);
+	return container;
+    }
+
+    @Bean
+    MessageReceiver receiver()
+    {
+	return new MessageReceiver();
+    }
+
+    @Bean
+    MessageListenerAdapter listenerAdapter(MessageReceiver receiver)
+    {
+	return new MessageListenerAdapter(receiver, "receiveMsg");
+    }
+}
+
+
+Product.java =>
+
+public class Product implements Serializable
+{
+    private int productId;
+    private String name;
+    private int quantity;
+
+    public int getProductId()
+    {
+	return productId;
+    }
+    public void setProductId(int productId)
+    {
+ 	this.productId = productId;
+    }
+
+    public String getName()
+    {
+	return name;
+    }
+    public void setName(String name)
+    {
+	this.name = name;
+    }
+
+    public int getQuantity()
+    {
+	return quantity;
+    }
+    public void setQuantity(int quantity)
+    {
+	this.quantity = quantity;
+    }
+
+    @Override
+    public String toString()
+    {
+	return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + "]";
+    }
+}
+
+
+
+MessageReceiver.java =>
+
+public class MessageReceiver
+{
+    private CountDownLatch countDownLatch = new CountDownLatch(1);
+
+    public void receiveMsg(Product product)
+    {
+	System.out.println("product object is Received: " + product);
+	countDownLatch.countDown();
+    }
+    public CountDownLatch getCountDownLatch()
+    {
+	return countDownLatch;
+    }
+}
+
+
+MessageConsumerApp.java =>
+
+public class MessageConsumerApp
+{
+    final static String queueName = "message_queue";
+
+    public static void main(String[] args) throws InterruptedException
+    {
+	AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(RabbitMQConfig.class);
+	MessageReceiver receiver = (MessageReceiver) ctx.getBean("receiver");
+	receiver.getCountDownLatch().await(200000, TimeUnit.SECONDS);
+    }
+}
+
+#############################################################################################################################

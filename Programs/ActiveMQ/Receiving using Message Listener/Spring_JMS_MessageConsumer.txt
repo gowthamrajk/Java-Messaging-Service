@@ -1,0 +1,148 @@
+
+Spring JMS Consumer :=> 
+
+Receiver part for Receive Messages from a Queue of ActiveMQ Asynchronously using Message Listener : 
+
+
+AppConfig.java =>
+
+@Configuration
+@ComponentScan(basePackages = "....")
+@Import({ MessagingConfiguration.class })
+public class AppConfig
+{
+    // Put Other Application configuration here.
+}
+
+
+MessagingConfiguration.java =>
+
+@Configuration
+public class MessagingConfiguration
+{
+    private static final String DEFAULT_BROKER_URL = "tcp://localhost:61616";
+    private static final String MESSAGE_QUEUE = "message_queue";
+
+    @Autowired
+    MessageReceiver messageReceiver;
+
+    @Bean
+    public ConnectionFactory connectionFactory()
+    {
+	ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory();
+	connectionFactory.setBrokerURL(DEFAULT_BROKER_URL);
+	connectionFactory.setTrustedPackages(Arrays.asList("com.ram"));
+	return connectionFactory;
+    }
+
+    @Bean
+    public JmsTemplate jmsTemplate()
+    {
+	JmsTemplate template = new JmsTemplate();
+	template.setConnectionFactory(connectionFactory());
+	template.setDefaultDestinationName(MESSAGE_QUEUE);
+	return template;
+    }
+
+    @Bean
+    MessageConverter converter()
+    {
+	return new SimpleMessageConverter();
+    }
+}
+
+
+Product.java =>
+
+public class Product implements Serializable
+{
+    private int productId;
+    private String name;
+    private int quantity;
+
+    public int getProductId()
+    {
+	return productId;
+    }
+    public void setProductId(int productId)
+    {
+ 	this.productId = productId;
+    }
+
+    public String getName()
+    {
+	return name;
+    }
+    public void setName(String name)
+    {
+	this.name = name;
+    }
+
+    public int getQuantity()
+    {
+	return quantity;
+    }
+    public void setQuantity(int quantity)
+    {
+	this.quantity = quantity;
+    }
+
+    @Override
+    public String toString()
+    {
+	return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + "]";
+    }
+}
+
+
+MessageReceiver.java =>
+
+@Component
+public class MessageReceiver implements MessageListener
+{
+    @Autowired
+    JmsTemplate jmsTemplate;
+    @Autowired
+    MessageConverter messageConverter;
+
+    public void onMessage(Message message)
+    {
+	try
+	{
+	    Product product = (Product) messageConverter.fromMessage(message);
+
+            System.out.println("------- Inside onMessage-------");
+	    System.out.println(product);
+            System.out.println("------- Inside onMessage-------");
+	}
+	catch (JMSException e)
+	{
+ 	    e.printStackTrace();
+	}
+    }
+}
+
+
+MessageConsumerApp.java =>
+
+public class MessageConsumerApp
+{
+    public static void main(String[] args)
+    {
+	AbstractApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+
+	try
+	{
+	    Thread.sleep(6000000);
+	}
+	catch (InterruptedException e)
+        {
+  	    e.printStackTrace();
+	}
+
+	((AbstractApplicationContext) context).close();
+    }
+}
+
+
+#############################################################################################################################

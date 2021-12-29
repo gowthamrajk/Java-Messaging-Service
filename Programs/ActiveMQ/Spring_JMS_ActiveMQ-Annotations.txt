@@ -1,0 +1,137 @@
+
+Sending/Receiving Text messages To/from Queue(Spring + JMS + ActiveMQ) using Annotation configuration : 
+
+
+AppConfig.java =>
+
+@Configuration
+@ComponentScan(basePackages = "....")
+@Import({ MessagingConfiguration.class })
+public class AppConfig
+{
+    // Put Other Application configuration here.
+}
+
+
+MessagingConfiguration.java =>
+
+@Configuration
+public class MessagingConfiguration
+{
+    private static final String DEFAULT_BROKER_URL = "tcp://localhost:61616";
+    private static final String MESSAGE_QUEUE = "message_queue";
+
+    @Autowired
+    MessageReceiver messageReceiver;
+
+    @Bean
+    public ConnectionFactory connectionFactory()
+    {
+	ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory();
+	connectionFactory.setBrokerURL(DEFAULT_BROKER_URL);
+	connectionFactory.setTrustedPackages(Arrays.asList("com.ram"));
+	return connectionFactory;
+    }
+
+    @Bean
+    public JmsTemplate jmsTemplate()
+    {
+	JmsTemplate template = new JmsTemplate();
+	template.setConnectionFactory(connectionFactory());
+	template.setDefaultDestinationName(MESSAGE_QUEUE);
+	return template;
+    }
+
+    @Bean
+    MessageConverter converter()
+    {
+	return new SimpleMessageConverter();
+    }
+}
+
+
+MessageSender.java =>
+
+@Component
+public class MessageSender
+{
+    @Autowired
+    JmsTemplate jmsTemplate;
+
+    public void sendMessage(final String message)
+    {
+
+	jmsTemplate.send(new MessageCreator()
+	{
+	    public Message createMessage(Session session) throws JMSException
+	    {
+		ObjectMessage objectMessage = session.createObjectMessage(message);
+		return objectMessage;
+	    }
+	});
+    }
+}
+
+
+MessageReceiver.java =>
+
+@Component
+public class MessageReceiver
+{
+    @Autowired
+    JmsTemplate jmsTemplate;
+    @Autowired
+    MessageConverter messageConverter;
+
+    public String receiveMessage()
+    {
+	try
+	{		
+	    Message message = jmsTemplate.receive();
+	    String response = (String) messageConverter.fromMessage(message);
+	    return response;
+	}
+	catch (Exception exe)
+	{
+	    exe.printStackTrace();
+	}
+	return null;
+    }
+}
+
+
+MessageConsumerApp.java =>
+
+public class MessageConsumerApp
+{
+    public static void main(String[] args)
+    {
+	AbstractApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+
+	MessageReceiver messageReceiver = (MessageReceiver) context.getBean("messageReceiver");
+	String response = messageReceiver.receiveMessage();
+	System.out.println("Messgae Received = " + response);
+
+	((AbstractApplicationContext) context).close();
+    }
+}
+
+
+MessageProducerApp.java =>
+
+public class MessageProducerApp
+{
+    public static void main(String[] args)
+    {
+	AbstractApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+
+	MessageSender messageSender = context.getBean(MessageSender.class);
+
+	messageSender.sendMessage("Hi Peter, How are you?");
+	System.out.println("Message has been sent successfully...");
+
+	((AbstractApplicationContext) context).close();
+    }
+}
+
+#############################################################################################################################

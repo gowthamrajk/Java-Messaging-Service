@@ -1,0 +1,89 @@
+
+Receiving Class Object from the queue of RabbitMQ using Java Program : 
+
+
+Product.java =>
+
+public class Product implements Serializable
+{
+    private int productId;
+    private String name;
+    private int quantity;
+
+    public int getProductId()
+    {
+	return productId;
+    }
+    public void setProductId(int productId)
+    {
+ 	this.productId = productId;
+    }
+
+    public String getName()
+    {
+	return name;
+    }
+    public void setName(String name)
+    {
+	this.name = name;
+    }
+
+    public int getQuantity()
+    {
+	return quantity;
+    }
+    public void setQuantity(int quantity)
+    {
+	this.quantity = quantity;
+    }
+
+    @Override
+    public String toString()
+    {
+	return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + "]";
+    }
+}
+
+
+
+MessageReceiver.java =>
+
+public class MessageReceiver
+{
+    private final static String QUEUE_NAME = "Message_Queue";
+
+    public static void main(String[] argv) throws Exception
+    {
+	ConnectionFactory factory = new ConnectionFactory();
+	factory.setHost("localhost");
+	Connection connection = factory.newConnection();
+	Channel channel = connection.createChannel();
+
+	channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+	System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+		
+	DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+	    byte[] byteArray = delivery.getBody();
+
+    	    try
+	    {
+	        Product product = (Product) deserialize(byteArray);
+		System.out.println(" [x] Received '" + product + "'");
+	    }
+	    catch (ClassNotFoundException e)
+	    {
+	        e.printStackTrace();
+	    }
+	};
+	channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> { });
+    }
+
+    public static Object deserialize(byte[] byteArray) throws IOException, ClassNotFoundException
+    {
+	ByteArrayInputStream in = new ByteArrayInputStream(byteArray);
+	ObjectInputStream is = new ObjectInputStream(in);
+	return is.readObject();
+    }
+}
+
+#############################################################################################################################

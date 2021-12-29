@@ -1,0 +1,160 @@
+
+Spring JMS Consumer :=> 
+
+Receiver part for Receive Messages from a Queue of ActiveMQ Asynchronously using @JmsListener & @EnableJms annotations : 
+
+
+AppConfig.java =>
+
+@Configuration
+@ComponentScan(basePackages = "....")
+@Import({ MessagingConfiguration.class })
+public class AppConfig
+{
+    // Put Other Application configuration here.
+}
+
+
+MessagingConfiguration.java =>
+
+@Configuration
+public class MessagingConfiguration
+{
+    private static final String DEFAULT_BROKER_URL = "tcp://localhost:61616";
+    private static final String MESSAGE_QUEUE = "message_queue";
+
+    @Autowired
+    MessageReceiver messageReceiver;
+
+    @Bean
+    public ConnectionFactory connectionFactory()
+    {
+	ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory();
+	connectionFactory.setBrokerURL(DEFAULT_BROKER_URL);
+	connectionFactory.setTrustedPackages(Arrays.asList("com.ram"));
+	return connectionFactory;
+    }
+
+    @Bean
+    public JmsTemplate jmsTemplate()
+    {
+	JmsTemplate template = new JmsTemplate();
+	template.setConnectionFactory(connectionFactory());
+	template.setDefaultDestinationName(MESSAGE_QUEUE);
+	return template;
+    }
+
+    @Bean
+    MessageConverter converter()
+    {
+	return new SimpleMessageConverter();
+    }
+}
+
+
+MessagingListenerConfiguration.java =>
+
+@Configuration
+@EnableJms
+public class MessagingListnerConfiguration
+{
+
+    @Autowired
+    ConnectionFactory connectionFactory;
+
+    @Bean
+    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory()
+    {
+	DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+	factory.setConnectionFactory(connectionFactory);
+	factory.setConcurrency("1-1");
+	return factory;
+    }
+}
+
+
+Product.java =>
+
+public class Product implements Serializable
+{
+    private int productId;
+    private String name;
+    private int quantity;
+
+    public int getProductId()
+    {
+	return productId;
+    }
+    public void setProductId(int productId)
+    {
+ 	this.productId = productId;
+    }
+
+    public String getName()
+    {
+	return name;
+    }
+    public void setName(String name)
+    {
+	this.name = name;
+    }
+
+    public int getQuantity()
+    {
+	return quantity;
+    }
+    public void setQuantity(int quantity)
+    {
+	this.quantity = quantity;
+    }
+
+    @Override
+    public String toString()
+    {
+	return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + "]";
+    }
+}
+
+
+MessageReceiver.java =>
+
+@Component
+public class MessageReceiver
+{
+    private static final String MESSAGE_QUEUE = "message_queue";
+
+    @JmsListener(destination = MESSAGE_QUEUE)
+    public void receiveMessage(final Message<Product> message) throws JMSException
+    {
+	MessageHeaders headers = message.getHeaders();
+	System.out.println("headers = " + headers);
+
+	Product product = message.getPayload();
+	System.out.println("product = " + product);
+    }
+}
+
+
+MessageConsumerApp.java =>
+
+public class MessageConsumerApp
+{
+    public static void main(String[] args)
+    {
+	AbstractApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+
+	try
+	{
+	    Thread.sleep(6000000);
+	}
+	catch (InterruptedException e)
+        {
+  	    e.printStackTrace();
+	}
+
+	((AbstractApplicationContext) context).close();
+    }
+}
+
+
+#############################################################################################################################

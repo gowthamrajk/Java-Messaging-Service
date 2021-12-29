@@ -1,0 +1,121 @@
+
+Spring JMS Producer :=> 
+
+Sender part for sending Objects to a Queue of RabbitMQ with Manual Acknowledgment :
+
+
+RabbitMQConfig.java =>
+
+@Component
+public class RabbitMQConfiguration
+{
+
+    public static final String topicExchangeName = "message_queue_exchange";
+
+    public static final String queueName = "message_queue";
+
+    @Bean
+    Queue queue()
+    {
+	return new Queue(queueName, false);
+    }
+
+    @Bean
+    TopicExchange exchange()
+    {
+	return new TopicExchange(topicExchangeName);
+    }
+
+    @Bean
+    Binding binding(Queue queue, TopicExchange exchange)
+    {
+	return BindingBuilder.bind(queue).to(exchange).with("message_routing_key");
+    }
+
+    @Bean
+    public ConnectionFactory connectionFactory()
+    {
+	CachingConnectionFactory connectionFactory = new CachingConnectionFactory("localhost");
+	connectionFactory.setPort(5672);
+	connectionFactory.setUsername("guest");
+	connectionFactory.setPassword("guest");
+	return connectionFactory;
+    }
+}
+
+
+
+Product.java =>
+
+public class Product implements Serializable
+{
+    private int productId;
+    private String name;
+    private int quantity;
+
+    public int getProductId()
+    {
+	return productId;
+    }
+    public void setProductId(int productId)
+    {
+ 	this.productId = productId;
+    }
+
+    public String getName()
+    {
+	return name;
+    }
+    public void setName(String name)
+    {
+	this.name = name;
+    }
+
+    public int getQuantity()
+    {
+	return quantity;
+    }
+    public void setQuantity(int quantity)
+    {
+	this.quantity = quantity;
+    }
+
+    @Override
+    public String toString()
+    {
+	return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + "]";
+    }
+}
+
+
+
+Application.java =>
+
+@SpringBootApplication
+public class Application implements CommandLineRunner
+{
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    public static void main(String[] args) throws InterruptedException
+    {
+	SpringApplication.run(Application.class, args);
+    }
+
+    @Override
+    public void run(String... args) throws Exception
+    {
+	Product product = new Product();
+	product.setProductId(100);
+	product.setName("Laptop");
+	product.setQuantity(10);
+		
+	System.out.println("Sending message...");
+	rabbitTemplate.convertAndSend(RabbitMQConfiguration.topicExchangeName, "message_routing_key", product);
+	System.out.println("Message sent successfully...");
+    }
+}
+
+
+#############################################################################################################################
